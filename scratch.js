@@ -50,6 +50,15 @@ const postcssAny = require('./')
 
 const input = `
 
+.bar,
+:is(.good),
+:matches(.well),
+[class^='base-']:any(a),
+:any(p, ul, ol),
+.foo {
+  color: blue
+}
+
 /*
   output prefixed :any() selectors in separate cloned rules
   output non-:any() selectors alone in the original rule
