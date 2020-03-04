@@ -1,21 +1,24 @@
 {
-  "name": "postcss-any",
-  "version": "0.0.0",
-  "description": "PostCSS plugin which converts :any selector to the dodgy but still supported :-moz-any and :-webkit-any",
+  "name": "postcss-pseudo-any",
+  "version": "0.9.0",
+  "description": "PostCSS plugin which converts the :any() selector to :-moz-any() and :-webkit-any()",
   "keywords": [
     "postcss",
     "css",
     "postcss-plugin",
+    ":is",
+    ":matches",
     ":any",
     ":-moz-any",
     ":-webkit-any"
   ],
   "scripts": {
-    "test": "jest && eslint ."
+    "lint": "eslint . --fix",
+    "test": "jest"
   },
   "author": "Lu Nelson <lunelson@gmail.com>",
   "license": "MIT",
-  "repository": "lunelson/postcss-any",
+  "repository": "lunelson/postcss-pseudo-any",
   "dependencies": {
     "postcss": "^7.0.18"
   },
@@ -33,7 +36,8 @@
     "eslint-plugin-security": "^1.4.0",
     "eslint-plugin-standard": "^4.0.1",
     "eslint-plugin-unicorn": "^12.1.0",
-    "jest": "^24.9.0"
+    "jest": "^24.9.0",
+    "prettier": "^1.19.1"
   },
   "eslintConfig": {
     "extends": "eslint-config-postcss"

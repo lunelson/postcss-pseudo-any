@@ -1,20 +1,38 @@
-// eslint-disable-next-line security/detect-unsafe-regex
-const anyRE = /::?(-?(moz|webkit)-)?any\(/iu;
+/* eslint-disable max-len */
 
-// [
-//   '.foo',
-//   ':any(),
-//   ':-moz-any()',
-//   ':-webkit-any()',
-//   '::any()',
-//   '::-moz-any()',
-//   '::-webkit-any()',
-//   ':moz-any()',
-//   ':webkit-any()'
-// ].map(str => str.match(anyRE));
+/*
+
+https://github.com/csstools/postcss-preset-env
+https://webdesign.tutsplus.com/tutorials/postcss-deep-dive-create-your-own-plugin--cms-24605
+https://github.com/postcss/postcss-plugin-boilerplate
+
+TODO:
+
+- change name to postcss-pseudo-any
+- add support for :is and :matches, optional, default false
+- make the prefixing of existing prefixes also an option, default false
+
+  https://css-tricks.com/almanac/selectors/i/is/
+  https://caniuse.com/#feat=css-matches-pseudo
+  https://caniuse.com/#feat=mdn-css_selectors_is
+  https://bugzilla.mozilla.org/show_bug.cgi?id=906353
+  https://developer.mozilla.org/en-US/docs/Web/CSS/:is
+
+ */
+
+let matchIsMatches = false
+let matchPrefixed = false
+// eslint-disable-next-line security/detect-unsafe-regex
+// eslint-disable-next-line security/detect-non-literal-regexp
+const anyRE = new RegExp(`::?(${ matchIsMatches ? 'is|matches|' : '' }${ matchPrefixed ? '(-?(moz|webkit)-)?' : '' }any)\\(`);
+// const anyRE = /::?(any)\(/iu;
+// const anyRE = /::?(is|matches|any)\(/iu;
+// const anyRE = /::?(is|matches|(-?(moz|webkit)-)?any)\(/iu;
 
 [
   '.foo',
+  ':is()',
+  ':matches()',
   ':any()',
   ':-moz-any()',
   ':-webkit-any()',
@@ -64,6 +82,8 @@ a:webkit-any(.link, .btn),
  */
 
 .bar,
+*:is(💩),
+:matches(🔥),
 [class^='base-']:any(a),
 :any(p, ul, ol),
 .foo {

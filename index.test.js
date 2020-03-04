@@ -4,82 +4,198 @@ let postcss = require('postcss')
 
 let plugin = require('./')
 
-async function run (input, output, opts) {
-  let result = await postcss([plugin(opts)]).process(input, { from: undefined })
-  expect(result.css).toEqual(output)
+it('converts :any() pseudo-selectors, including badly formed ones', async () => {
+  let result = await postcss([plugin()]).process(
+    `
+a::any(.convert),
+a:any(.convert),
+::any(.convert),
+:any(.convert),
+.skip {
+  color: red;
+}
+  `,
+    { from: undefined }
+  )
+  expect(result.css).toMatchInlineSnapshot(`
+    "
+    a:-moz-any(.convert),
+    a:-moz-any(.convert),
+    :-moz-any(.convert),
+    :-moz-any(.convert) {
+      color: red;
+    }
+    a:-webkit-any(.convert),
+    a:-webkit-any(.convert),
+    :-webkit-any(.convert),
+    :-webkit-any(.convert) {
+      color: red;
+    }
+    .skip {
+      color: red;
+    }
+      "
+  `)
   expect(result.warnings()).toHaveLength(0)
-}
-
-it('catches badly formed or already-prefixed :any() selectors', async () => {
-  await run(`
-a:-moz-any(.link, .btn),
-a:-webkit-any(.link, .btn),
-a::any(.link, .btn),
-a::-moz-any(.link, .btn),
-a::-webkit-any(.link, .btn),
-a:moz-any(.link, .btn),
-a:webkit-any(.link, .btn),
-:-moz-any(span),
-:-webkit-any(span),
-::any(span),
-::-moz-any(span),
-::-webkit-any(span),
-:moz-any(span),
-:webkit-any(span) {
-  color: red;
-}
-`, `
-a:-moz-any(.link, .btn), a:-moz-any(.link, .btn), a:-moz-any(.link, .btn), a:-moz-any(.link, .btn), a:-moz-any(.link, .btn), a:-moz-any(.link, .btn), a:-moz-any(.link, .btn), :-moz-any(span), :-moz-any(span), :-moz-any(span), :-moz-any(span), :-moz-any(span), :-moz-any(span), :-moz-any(span) {
-  color: red;
-}
-a:-webkit-any(.link, .btn), a:-webkit-any(.link, .btn), a:-webkit-any(.link, .btn), a:-webkit-any(.link, .btn), a:-webkit-any(.link, .btn), a:-webkit-any(.link, .btn), a:-webkit-any(.link, .btn), :-webkit-any(span), :-webkit-any(span), :-webkit-any(span), :-webkit-any(span), :-webkit-any(span), :-webkit-any(span), :-webkit-any(span) {
-  color: red;
-}
-`, {})
 })
 
-it('outputs prefixed :any() selectors in separate cloned rules with non :any() selectors remaining in the original rule', async () => {
-  await run(`
-.bar,
-[class^='base-']:any(a),
-:any(p, ul, ol),
-.foo {
-  color: blue
+it('skips prefixed :any() pseudo-selectors', async () => {
+  let result = await postcss([plugin()]).process(
+    `
+a:any(.convert),
+a:-moz-any(.skip),
+a:-webkit-any(.skip),
+::any(.convert),
+::-moz-any(.skip),
+::-webkit-any(.skip),
+{
+  color: red;
 }
+`,
+    { from: undefined }
+  )
+  expect(result.css).toMatchInlineSnapshot(`
+    "
+    a:-moz-any(.convert),
+    :-moz-any(.convert)
+    {
+      color: red;
+    }
+    a:-webkit-any(.convert),
+    :-webkit-any(.convert)
+    {
+      color: red;
+    }
+    a:-moz-any(.skip),
+    a:-webkit-any(.skip),
+    ::-moz-any(.skip),
+    ::-webkit-any(.skip)
+    {
+      color: red;
+    }
+    "
+  `)
+  expect(result.warnings()).toHaveLength(0)
+})
+it('converts prefixed :any() pseudo-selectors, with option', async () => {
+  let result = await postcss([plugin({ matchPrefixed: true })]).process(
+    `
+a:any(.convert),
+a:-moz-any(.convert),
+a:-webkit-any(.convert),
+::any(.convert),
+::-moz-any(.convert),
+::-webkit-any(.convert),
+.skip,
+{
+  color: red;
+}
+  `,
+    { from: undefined }
+  )
+  expect(result.css).toMatchInlineSnapshot(`
+    "
+    a:-moz-any(.convert),
+    a:-moz-any(.convert),
+    a:-moz-any(.convert),
+    :-moz-any(.convert),
+    :-moz-any(.convert),
+    :-moz-any(.convert)
+    {
+      color: red;
+    }
+    a:-webkit-any(.convert),
+    a:-webkit-any(.convert),
+    a:-webkit-any(.convert),
+    :-webkit-any(.convert),
+    :-webkit-any(.convert),
+    :-webkit-any(.convert)
+    {
+      color: red;
+    }
+    .skip
+    {
+      color: red;
+    }
+      "
+  `)
+  expect(result.warnings()).toHaveLength(0)
+})
 
-.foobar,
-.moz > :-moz-any(h1, h2, h3),
-.moz > :-moz-any(p, ul, ol) {
-  margin-top: -1em
+it('skips :is() and :matches() pseudo-selectors if option is false', async () => {
+  let result = await postcss([plugin({ matchModern: false })]).process(
+    `
+:is(.skip),
+:any(.convert),
+:matches(.skip),
+::is(.skip),
+::any(.convert),
+::matches(.skip),
+{
+  color: yellow
 }
-`, `
-[class^='base-']:-moz-any(a),
-:-moz-any(p, ul, ol) {
-  color: blue
+  `,
+    { from: undefined }
+  )
+  expect(result.css).toMatchInlineSnapshot(`
+    "
+    :-moz-any(.convert),
+    :-moz-any(.convert)
+    {
+      color: yellow
+    }
+    :-webkit-any(.convert),
+    :-webkit-any(.convert)
+    {
+      color: yellow
+    }
+    :is(.skip),
+    :matches(.skip),
+    ::is(.skip),
+    ::matches(.skip)
+    {
+      color: yellow
+    }
+      "
+  `)
+  expect(result.warnings()).toHaveLength(0)
+})
+it('converts :is() and :matches() pseudo-selectors', async () => {
+  let result = await postcss([plugin()]).process(
+    `
+:is(.convert),
+:any(.convert),
+:matches(.convert),
+::is(.convert),
+::any(.convert),
+::matches(.convert),
+{
+  color: yellow
 }
-
-[class^='base-']:-webkit-any(a),
-:-webkit-any(p, ul, ol) {
-  color: blue
-}
-
-.bar,
-.foo {
-  color: blue
-}
-
-.moz > :-moz-any(h1, h2, h3),
-.moz > :-moz-any(p, ul, ol) {
-  margin-top: -1em
-}
-
-.moz > :-webkit-any(h1, h2, h3),
-.moz > :-webkit-any(p, ul, ol) {
-  margin-top: -1em
-}
-
-.foobar {
-  margin-top: -1em
-}
-`, {})
+  `,
+    { from: undefined }
+  )
+  expect(result.css).toMatchInlineSnapshot(`
+    "
+    :-moz-any(.convert),
+    :-moz-any(.convert),
+    :-moz-any(.convert),
+    :-moz-any(.convert),
+    :-moz-any(.convert),
+    :-moz-any(.convert)
+    {
+      color: yellow
+    }
+    :-webkit-any(.convert),
+    :-webkit-any(.convert),
+    :-webkit-any(.convert),
+    :-webkit-any(.convert),
+    :-webkit-any(.convert),
+    :-webkit-any(.convert)
+    {
+      color: yellow
+    }
+      "
+  `)
+  expect(result.warnings()).toHaveLength(0)
 })

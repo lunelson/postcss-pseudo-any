@@ -1,18 +1,39 @@
-# PostCSS Any
+# postcss-pseudo-any
 
-[PostCSS] plugin which converts :any selector to the dodgy but still supported :-moz-any and :-webkit-any.
+A [PostCSS] plugin for CSS authors who can't wait to use `:matches()` or `:is()`. Converts the `:any()` selector to `:-moz-any()` and `:-webkit-any()`, and lets you get on with things.
 
-[PostCSS]: https://github.com/postcss/postcss
+## WTF
+CSS level 4 contains a spec for :is() which was previously called :matches(), and previous to that was anticipated to be called :any(), and was actually implemented across most modern browsers in prefixed form as `:-moz-any()` and `:-webkit-any()`.
+
+Those are now considered deprecated and slightly incorrect in terms of specificity, and they lack some features projected for :is(), but the fact is that no browser currently implements :is or :matches but :any is well-supported.
+
+[insert caniuse browser table]
+
 
 ```css
+.bar,
+
+[class^='base-']:any(a),
+:any(p, ul, ol),
 .foo {
-    /* Input example */
+  color: blue
 }
 ```
 
 ```css
+[class^='base-']:-moz-any(a),
+:-moz-any(p, ul, ol) {
+  color: blue
+}
+
+[class^='base-']:-webkit-any(a),
+:-webkit-any(p, ul, ol) {
+  color: blue
+}
+
+.bar,
 .foo {
-  /* Output example */
+  color: blue
 }
 ```
 
@@ -27,7 +48,7 @@ If you already use PostCSS, add the plugin to plugins list:
 ```diff
 module.exports = {
   plugins: [
-+   require('postcss-any'),
++   require('postcss-pseudo-any'),
     require('autoprefixer')
   ]
 }
@@ -36,9 +57,4 @@ module.exports = {
 If you do not use PostCSS, add it according to [official docs] and set this plugin in settings.
 
 [official docs]: https://github.com/postcss/postcss#usage
-
-## REFERENCES
-
-https://github.com/csstools/postcss-preset-env
-https://webdesign.tutsplus.com/tutorials/postcss-deep-dive-create-your-own-plugin--cms-24605
-https://github.com/postcss/postcss-plugin-boilerplate
+[PostCSS]: https://github.com/postcss/postcss

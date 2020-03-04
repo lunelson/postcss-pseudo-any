@@ -1,34 +1,32 @@
+/* eslint-disable max-len */
 let postcss = require('postcss')
 
 /*
-                   _
-                  | |
-   _ __   ___  ___| |_ ___ ___ ___ ______ __ _ _ __  _   _
-  | '_ \ / _ \/ __| __/ __/ __/ __|______/ _` | '_ \| | | |
-  | |_) | (_) \__ \ || (__\__ \__ \     | (_| | | | | |_| |
-  | .__/ \___/|___/\__\___|___/___/      \__,_|_| |_|\__, |
-  | |                                                 __/ |
-  |_|                                                |___/
+                  _                                               _
+                  | |                                             | |
+  _ __   ___  ___| |_ ___ ___ ___ ______ _ __  ___  ___ _   _  __| | ___ ______ __ _ _ __  _   _
+  | '_ \ / _ \/ __| __/ __/ __/ __|______| '_ \/ __|/ _ \ | | |/ _` |/ _ \______/ _` | '_ \| | | |
+  | |_) | (_) \__ \ || (__\__ \__ \      | |_) \__ \  __/ |_| | (_| | (_) |    | (_| | | | | |_| |
+  | .__/ \___/|___/\__\___|___/___/      | .__/|___/\___|\__,_|\__,_|\___/      \__,_|_| |_|\__, |
+  | |                                    | |                                                 __/ |
+  |_|                                    |_|                                                |___/
 
   This plugin does the following:
 
-  1. It catches various forms of :any() selector,
-      includding badly formed or already-prefixed versions.
-  2. It separates them in to their own prefixed rules,
-      separate from one another, and separate from any
-      non-:any() selectors from the same original rule.
+  1. It catches instances of :any() selectors within rules, including
+      badly formed versions
+      --optionally, modern :is() and :matches() versions
+      --optionally, already-prefixed :-moz-any() and :-webkit-any() versions
+  2. It clones and separates the rule in to ones with prefixed :-moz-any() and :-webkit-any() selectors,
+      separate from non-:any() selectors from the original rule.
  */
 
-/*
-  NB: the regex below is marked by eslint as unsafe
-  but I'm considering it a false-positive -- see below
-  https://github.com/sindresorhus/eslint-plugin-unicorn/issues/153
- */
-
-// eslint-disable-next-line security/detect-unsafe-regex
-const anyRE = /::?(-?(moz|webkit)-)?any\(/iu
-
-const postcssAny = postcss.plugin('postcss-any', () => {
+const postcssPseudoAny = postcss.plugin('postcss-pseudo-any', ({
+  matchModern = true,
+  matchPrefixed = false
+} = {}) => {
+  // eslint-disable-next-line security/detect-non-literal-regexp
+  let anyRE = new RegExp(`::?(${ matchModern ? 'is|matches|' : '' }${ matchPrefixed ? '(-?(moz|webkit)-)?' : '' }any)\\(`)
   return root => {
     root.walkRules(rule => {
       if (rule.selector.match(anyRE)) {
@@ -55,4 +53,4 @@ const postcssAny = postcss.plugin('postcss-any', () => {
   }
 })
 
-module.exports = postcssAny
+module.exports = postcssPseudoAny
