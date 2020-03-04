@@ -1,6 +1,7 @@
 # postcss-pseudo-any
 
 [![Build Status](https://travis-ci.com/lunelson/postcss-pseudo-any.svg?branch=master)](https://travis-ci.com/lunelson/postcss-pseudo-any)
+[![Build Status](https://david-dm.org/lunelson/postcss-pseudo-any.svg?branch=master)](https://travis-ci.com/lunelson/postcss-pseudo-any)
 
 A [PostCSS] plugin for CSS authors who can't wait to use `:matches()` or `:is()`. Converts the `:any()` selector to `:-moz-any()` and `:-webkit-any()`, and lets you get on with things.
 
