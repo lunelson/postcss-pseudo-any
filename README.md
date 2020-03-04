@@ -56,24 +56,27 @@ This will be cloned and separated out, in to separate declarations with prefixed
 } 
 ```
 
-## Plugging it in
+## Get Started
 
-Check your project for existed PostCSS config: `postcss.config.js`
-in the project root, `"postcss"` section in `package.json`
-or `postcss` in bundle config.
+### Installation
 
-If you already use PostCSS, add the plugin to plugins list:
+If you do not use PostCSS, add it according to [official docs] and set this plugin in settings; otherwise check your project for an existing PostCSS config: `postcss.config.js` in the project root, `"postcss"` section in `package.json`, or `postcss` in bundle config, and add the plugin to plugins list:
 
 ```diff
 module.exports = {
   plugins: [
-+   require('postcss-pseudo-any'),
++   require('postcss-pseudo-any')(options),
     require('autoprefixer')
   ]
 }
 ```
 
-If you do not use PostCSS, add it according to [official docs] and set this plugin in settings.
+### Options
+
+|option name|default value|meaning|
+|--|--|--|
+|__`matchModern`__|`true`|Whether the plugin should convert `:is()` and `:matches` selectors as well as `:any()`|
+|__`matchPrefixed`__|`false`|Whether the plugin should convert _already prefixed_ `:-moz-any()` and `:-webkit-any()`selectors as well as non-prefixed ones|
 
 
 [official docs]: https://github.com/postcss/postcss#usage
