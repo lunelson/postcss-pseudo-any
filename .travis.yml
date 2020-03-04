@@ -4,3 +4,9 @@ node_js:
   - node
   - "10"
   - "8"
+install:
+  - npm i
+script:
+  - npm t
+# sudo: false
+# after_success: npm run coverage
