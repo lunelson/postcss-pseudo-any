@@ -26,7 +26,7 @@ const postcssPseudoAny = postcss.plugin('postcss-pseudo-any', ({
   matchPrefixed = false
 } = {}) => {
   // eslint-disable-next-line security/detect-non-literal-regexp
-  let anyRE = new RegExp(`::?(${ matchModern ? 'is|matches|' : '' }${ matchPrefixed ? '(-?(moz|webkit)-)?' : '' }any)\\(`)
+  let anyRE = new RegExp(`::?(${ matchModern ? 'is|matches|' : '' }${ matchPrefixed ? '(-?(moz|webkit)-)?' : '' }any)\\(`, 'g')
   return root => {
     root.walkRules(rule => {
       if (rule.selector.match(anyRE)) {

@@ -77,6 +77,7 @@ a:-webkit-any(.skip),
   `)
   expect(result.warnings()).toHaveLength(0)
 })
+
 it('converts prefixed :any() pseudo-selectors, with option', async () => {
   let result = await postcss([plugin({ matchPrefixed: true })]).process(
     `
@@ -160,6 +161,7 @@ it('skips :is() and :matches() pseudo-selectors if option is false', async () =>
   `)
   expect(result.warnings()).toHaveLength(0)
 })
+
 it('converts :is() and :matches() pseudo-selectors', async () => {
   let result = await postcss([plugin()]).process(
     `
@@ -194,6 +196,36 @@ it('converts :is() and :matches() pseudo-selectors', async () => {
     :-webkit-any(.convert)
     {
       color: yellow
+    }
+      "
+  `)
+  expect(result.warnings()).toHaveLength(0)
+})
+
+it('matches multiple times within a selector', async () => {
+  let result = await postcss([plugin()]).process(
+    `
+.boop .beep,
+.boop > :any(foo, bar, baz) + :any(foo, bar, baz)
+{
+  color: blue;
+}
+  `,
+    { from: undefined }
+  )
+  expect(result.css).toMatchInlineSnapshot(`
+    "
+    .boop > :-moz-any(foo, bar, baz) + :-moz-any(foo, bar, baz)
+    {
+      color: blue;
+    }
+    .boop > :-webkit-any(foo, bar, baz) + :-webkit-any(foo, bar, baz)
+    {
+      color: blue;
+    }
+    .boop .beep
+    {
+      color: blue;
     }
       "
   `)

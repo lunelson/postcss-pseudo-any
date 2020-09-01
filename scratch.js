@@ -42,13 +42,13 @@ const anyRE = new RegExp(`::?(${ matchIsMatches ? 'is|matches|' : '' }${ matchPr
   '::-webkit-any()',
   ':moz-any()',
   ':webkit-any()'
-].map(str => str.replace(anyRE, ':any(')) // ?
+].map(str => str.replace(anyRE, ':any('))
 
 const postcss = require('postcss')
 
 const postcssAny = require('./')
 
-const input = `
+const holding = `
 
 .bar,
 :is(.good),
@@ -103,6 +103,18 @@ a:webkit-any(.link, .btn),
 .moz > :-moz-any(h1, h2, h3),
 .moz > :-moz-any(p, ul, ol) {
   margin-top: -1em
+}
+
+`
+
+const input = `
+/*
+  catch multiple instances within a single selector !
+ */
+
+.boop .beep,
+.boop > :any(foo, bar, baz) + :any(foo, bar, baz) {
+  --stack-gap-adjust: var(--trim-adjacent);
 }
 
 `;
